@@ -22,23 +22,22 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def uniform(high):
+def uniform_distro(high):
     return random.uniform(0, high)
 
-def skewed(high):
+def skewed_distro(high):
     x = 1.0 - random.random()
     return high + (-1 * high) * math.sqrt(x)
 
-def two_tiered(high, cutoff=0.1, first_portion=0.5):
+def two_tiered_distro(high, cutoff=0.1, first_portion=0.5):
     x = random.random()
     if x < first_portion:
         return random.uniform(0, math.floor(N * cutoff))
     else:
         return random.uniform(math.floor(N * cutoff), N)
 
-def triangular(high, mode):
+def triangular_distro(high, mode):
     x = random.random()
-    low = 0
     mode = 0.5 if mode is None else (mode - low) / (high - low)
     if x > mode:
         x = 1.0 - x
@@ -46,19 +45,17 @@ def triangular(high, mode):
         low, high = high, low
     return low + (high - low) * math.sqrt(x * mode)
 
-
 def schedule_confs(N, S, K):
-    # Uniform
-    attendees = [0] * S
-    for a in range(S):
-        attendee_sessions = [0] * K
-        for s in range(K):
-            session = int(random.uniform(1, N))
-            attendee_sessions[s] = session
-        attendees[a] = attendee_sessions
-
+    # allocate array of size (num_attendees * num_sessions_per_attendee)
+    sessions = [0] * (S * K)
+    for attendee in range(S):
+        # loops until set is of size k (k distinct sessions)
+        # TODO break out of loop condition for edge cases
+        distinct_sessions = set()
+        while len(distinct_sessions) < K:
+            distinct_sessions.add(int(random.uniform(1, N)))
+        sessions
     return attendees
-
 
 N = 10
 trials = 2000
@@ -67,8 +64,8 @@ y_pos = list(range(1,N+1))
 
 py_performance = [0] * N
 for i in range(trials):
-    result = two_tiered(N) # uniform(N) # triangular(N,N//2)
+    result = uniform_distro(N) #two_tiered(N) # uniform(N) # triangular(N,N//2)
     py_performance[int(result)] += 1
 plt.bar(y_pos, py_performance, align="center", alpha=0.5)
-
+plt.title('Uniform')
 plt.show()
