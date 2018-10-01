@@ -3,7 +3,7 @@ import math
 
 
 def uniform(high):
-    return random.uniform(1, high)
+    return random.uniform(0, high)
 
 def skewed(high):
     x = 1.0 - random.random()
@@ -12,11 +12,11 @@ def skewed(high):
 def two_tiered(high, cutoff=0.1, first_portion=0.5):
     x = random.random()
     if x < first_portion:
-        return random.uniform(1, math.floor(high * cutoff))
+        return random.uniform(0, high * cutoff)
     else:
-        return random.uniform(math.floor(high * cutoff), high)
+        return random.uniform(high * cutoff, high)
 
-def triangular(high, mode=None, low=1):
+def triangular(high, mode=None, low=0):
     x = random.random()
     mode = 0.5 if mode is None else (mode - low) / (high - low)
     if x > mode:
