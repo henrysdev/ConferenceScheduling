@@ -1,21 +1,22 @@
 import random
 import math
 
-def uniform_distro(high):
-    return random.uniform(0, high)
 
-def skewed_distro(high):
+def uniform(high):
+    return random.uniform(1, high)
+
+def skewed(high):
     x = 1.0 - random.random()
     return high + (-1 * high) * math.sqrt(x)
 
-def two_tiered_distro(high, cutoff=0.1, first_portion=0.5):
+def two_tiered(high, cutoff=0.1, first_portion=0.5):
     x = random.random()
     if x < first_portion:
-        return random.uniform(0, math.floor(N * cutoff))
+        return random.uniform(1, math.floor(N * cutoff))
     else:
         return random.uniform(math.floor(N * cutoff), N)
 
-def triangular_distro(high, mode):
+def triangular(high, mode=None):
     x = random.random()
     mode = 0.5 if mode is None else (mode - low) / (high - low)
     if x > mode:
