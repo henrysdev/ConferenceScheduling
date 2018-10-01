@@ -16,7 +16,7 @@ def two_tiered(high, cutoff=0.1, first_portion=0.5):
     else:
         return random.uniform(math.floor(high * cutoff), high)
 
-def triangular(high, mode=None):
+def triangular(high, mode=None, low=1):
     x = random.random()
     mode = 0.5 if mode is None else (mode - low) / (high - low)
     if x > mode:

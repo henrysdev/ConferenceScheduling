@@ -26,12 +26,7 @@ distributions = {
     'YOURS'   : random_distributions.triangular
 }
 
-def prettyprint(iterable):
-    for item in iterable:
-        print(sorted(list(item)))
-
-def gen_attendee_sessions(N, S, K, DIST):
-    dist_func = distributions[DIST]
+def gen_attendee_sessions(N, S, K, dist_func):
     # allocate array of size (num_attendees * num_sessions_per_attendee)
     sessions = [0] * (S * K)
     for attendee in range(S):
@@ -46,41 +41,88 @@ def gen_attendee_sessions(N, S, K, DIST):
         start = attendee * K
         # fill in segment of sessions array with new attendee sessions
         new_sessions = list(distinct_sessions)
-        for i in range(0, K):
+        for i in range(K):
             sessions[i+start] = new_sessions[i]
     return sessions
 
-def gen_conflicts(attendee_sessions, K):
-    conflicts = set()
-    j = 0
-    while j < K:
+def gen_conflicts(attendee_sessions, conflicts, K):
+    attendee_conflicts = set()
+    attendee_choices = []
+    for i in range(K):
         # get and remove last element of array
-        a = attendee_sessions[j]
+        a = attendee_sessions[i]
+        attendee_choices.append(a)
         for b in attendee_sessions:
             if b != a:
-                conflicts.add((min(a,b), max(a,b)))
-        j += 1
-    return conflicts
+                conflict = tuple([min(a,b), max(a,b)])
+                if conflict not in attendee_conflicts:
+                    attendee_conflicts.add(tuple([min(a,b), max(a,b)]))
+                    conflicts.append(conflict)
+    print(attendee_choices)
+    print(attendee_conflicts)
 
 def sessions_to_conflicts(sessions, S, K):
-    conflicts = [[]] * S
+    conflicts = []
     temp = [0] * K
     c, t = 0, 0
     for i in range(len(sessions)):
         if i % K == 0 and i > 0:
-            conflicts[c] = gen_conflicts(temp, K)
+            gen_conflicts(temp, conflicts, K)
             c += 1
             t = 0
         temp[t] = sessions[i]
         t += 1
-    conflicts[c] = gen_conflicts(temp, K)
+    gen_conflicts(temp, conflicts, K)
     return conflicts
+
+def slow_dedup(conflicts, N):
+    # cast to a set and back into list to dedup keys
+    unique_cons = list(set(conflicts))
+    # record output variable M (# unique session conflicts)
+    M = len(conflicts)
+    # iterate through unique conflicts and create adjacency matrix
+    vertex_map = {}
+    for i, (a,b) in enumerate(unique_cons):
+        # edge a-->b
+        if a in vertex_map:
+            vertex_map[a].append(b)
+        else:
+            vertex_map[a] = [b]
+        # edge b-->a
+        if b in vertex_map:
+            vertex_map[b].append(a)
+        else:
+            vertex_map[b] = [a]
+    # build pointer list for each meeting
+    # set pointer to -1 by default if meeting
+    # has no conflicts
+    P = [-1] * N
+    keys = set(vertex_map.keys())
+    ptr = 0
+    for i in range(1,N+1):
+        if i in keys:
+            P[i-1] = ptr
+            ptr += len(vertex_map[i])
+    # flatten matrix into adjacency list
+    E = []
+    values = vertex_map.values()
+    for sublist in values:
+        for item in sublist:
+            E.append(item)
+
+    print("P:",P)
+    print("E:",E)
+    print("M:",M)
+
+    return None
+
 
 def schedule_confs(N, S, K, DIST):
     # get 1D array of K unique sessions for S attendees
-    sessions = gen_attendee_sessions(N, S, K, DIST)
+    sessions = gen_attendee_sessions(N, S, K, distributions[DIST])
     conflicts = sessions_to_conflicts(sessions, S, K)
-    prettyprint(conflicts)
+    # V1 and V2
+    unique_conflicts = slow_dedup(conflicts, N)
 
 
 if __name__ == "__main__":
