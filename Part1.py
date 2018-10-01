@@ -54,9 +54,18 @@ def schedule_confs(N, S, K):
         distinct_sessions = set()
         while len(distinct_sessions) < K:
             distinct_sessions.add(int(random.uniform(1, N)))
-        sessions
-    return attendees
+        # start position in sessions array to overwrite
+        start = attendee * K
+        # cast set of distinct sessions to a list for storage in sessions array
+        new_sessions = list(distinct_sessions)
+        print(new_sessions)
+        for i in range(0, K):
+            sessions[i+start] = new_sessions[i]
+    return sessions
 
+schedule_confs(N=120,S=32,K=12)
+
+"""
 N = 10
 trials = 2000
 
@@ -69,3 +78,4 @@ for i in range(trials):
 plt.bar(y_pos, py_performance, align="center", alpha=0.5)
 plt.title('Uniform')
 plt.show()
+"""
