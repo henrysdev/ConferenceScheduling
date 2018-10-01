@@ -18,17 +18,19 @@ OUTPUT:
 import sys
 import random_distributions
 
+# keyword -> function map for rand distros
+distributions = {
+    'UNIFORM' : random_distributions.uniform,
+    'TIERED'  : random_distributions.two_tiered,
+    'SKEWED'  : random_distributions.skewed,
+    'YOURS'   : random_distributions.triangular
+}
 
-def schedule_confs(N, S, K, DIST):
-    distributions = {
-        'UNIFORM' : random_distributions.uniform,
-        'TIERED'  : random_distributions.two_tiered,
-        'SKEWED'  : random_distributions.skewed,
-        'YOURS'   : random_distributions.triangular
-    }
-    if DIST not in distributions:
-        print("not a valid value for DIST")
-        exit(0)
+def prettyprint(iterable):
+    for item in iterable:
+        print(sorted(list(item)))
+
+def gen_attendee_sessions(N, S, K, DIST):
     dist_func = distributions[DIST]
     # allocate array of size (num_attendees * num_sessions_per_attendee)
     sessions = [0] * (S * K)
@@ -42,20 +44,66 @@ def schedule_confs(N, S, K, DIST):
             distinct_sessions.add(sess)
         # start position in sessions array to overwrite
         start = attendee * K
-        # cast set of distinct sessions to a list for storage in sessions array
+        # fill in segment of sessions array with new attendee sessions
         new_sessions = list(distinct_sessions)
-        print(new_sessions)
         for i in range(0, K):
             sessions[i+start] = new_sessions[i]
     return sessions
 
+def gen_conflicts(attendee_sessions, K):
+    conflicts = set()
+    j = 0
+    while j < K:
+        # get and remove last element of array
+        a = attendee_sessions[j]
+        for b in attendee_sessions:
+            if b != a:
+                conflicts.add((min(a,b), max(a,b)))
+        j += 1
+    return conflicts
+
+def sessions_to_conflicts(sessions, S, K):
+    conflicts = [[]] * S
+    temp = [0] * K
+    c, t = 0, 0
+    for i in range(len(sessions)):
+        if i % K == 0 and i > 0:
+            conflicts[c] = gen_conflicts(temp, K)
+            c += 1
+            t = 0
+        temp[t] = sessions[i]
+        t += 1
+    conflicts[c] = gen_conflicts(temp, K)
+    return conflicts
+
+def schedule_confs(N, S, K, DIST):
+    # get 1D array of K unique sessions for S attendees
+    sessions = gen_attendee_sessions(N, S, K, DIST)
+    conflicts = sessions_to_conflicts(sessions, S, K)
+    prettyprint(conflicts)
+
 
 if __name__ == "__main__":
+    # default algorithm arguments
+    N = 120
+    S = 32
+    K = 12
+    DIST = 'UNIFORM'
+    
+    # parse in commandline arguments
     if len(sys.argv) == 5:
         N = int(sys.argv[1])
         S = int(sys.argv[2])
         K = int(sys.argv[3])
         DIST = sys.argv[4]
-        schedule_confs(N, S, K, DIST)
-    else:
-        schedule_confs(N=120, S=32, K=12, DIST='UNIFORM')
+
+    # assert DIST is a valid keyword
+    if DIST not in distributions:
+        print("not a valid value for DIST")
+        exit(0)
+
+    if K > N:
+        print("K cannot be greater than N")
+        exit(0)
+
+    schedule_confs(N, S, K, DIST)
