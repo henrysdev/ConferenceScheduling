@@ -12,9 +12,9 @@ def skewed(high):
 def two_tiered(high, cutoff=0.1, first_portion=0.5):
     x = random.random()
     if x < first_portion:
-        return random.uniform(1, math.floor(N * cutoff))
+        return random.uniform(1, math.floor(high * cutoff))
     else:
-        return random.uniform(math.floor(N * cutoff), N)
+        return random.uniform(math.floor(high * cutoff), high)
 
 def triangular(high, mode=None):
     x = random.random()
