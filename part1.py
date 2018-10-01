@@ -80,7 +80,7 @@ def slow_dedup(conflicts, N):
     # cast to a set and back into list to dedup keys
     unique_cons = list(set(conflicts))
     # record output variable M (# unique session conflicts)
-    M = len(conflicts)
+    M = len(unique_cons)
     # iterate through unique conflicts and create adjacency matrix
     vertex_map = {}
     for i, (a,b) in enumerate(unique_cons):
