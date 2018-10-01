@@ -16,6 +16,7 @@ OUTPUT:
 •	An example output file will be provided on Canvas.
 """
 import sys
+import math
 import random_distributions
 
 # keyword -> function map for rand distros
@@ -35,7 +36,7 @@ def gen_attendee_sessions(N, S, K, dist_func):
         distinct_sessions = set()
         while len(distinct_sessions) < K:
             # get random session and add to set
-            sess = int(dist_func(N))
+            sess = math.ceil(dist_func(N))
             distinct_sessions.add(sess)
         # start position in sessions array to overwrite
         start = attendee * K
@@ -99,7 +100,7 @@ def slow_dedup(conflicts, N):
     P = [-1] * N
     keys = set(vertex_map.keys())
     ptr = 0
-    for i in range(1,N+1):
+    for i in range(0,N+1):
         if i in keys:
             P[i-1] = ptr
             ptr += len(vertex_map[i])
