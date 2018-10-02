@@ -82,6 +82,55 @@ def sessions_to_conflicts(sessions, S, K):
     gen_conflicts(temp, conflicts, K)
     return conflicts
 
+
+def method1(conflicts, N):
+    # cast to a set and back into list to dedup keys
+    unique_cons = list(set(conflicts))
+    # record output variable M (# unique session conflicts)
+    M = len(unique_cons)
+    # iterate through unique conflicts and create adjacency matrix
+    adjacency_lists = [[]] * N
+    for i in range(1,N+1):
+        if i in 
+        adjacency_lists[i-1]
+    """
+    adjacency_lists = {}
+    for i, (a,b) in enumerate(unique_cons):
+        # edge a-->b
+        if a in adjacency_lists:
+            adjacency_lists[a].append(b)
+        else:
+            adjacency_lists[a] = [b]
+        # edge b-->a
+        if b in adjacency_lists:
+            adjacency_lists[b].append(a)
+        else:
+            adjacency_lists[b] = [a]
+    # build pointer list for each meeting
+    # set pointer to -1 by default if meeting
+    # has no conflicts
+    P = [-1] * N
+    keys = set(adjacency_lists.keys())
+    ptr = 0
+    for i in range(1,N+1):
+        if i in keys:
+            P[i-1] = ptr
+            ptr += len(adjacency_lists[i])
+    # flatten matrix into adjacency list
+    E = []
+    values = adjacency_lists.values()
+    for sublist in values:
+        for item in sublist:
+            E.append(item)
+
+    print("P:",P)
+    print("E:",E)
+    print("M:",M)
+
+    return None
+    """
+
+
 def method2(conflicts, N):
     # cast to a set to dedup conflicts
     unique_cons = set(conflicts)
@@ -116,47 +165,6 @@ def method2(conflicts, N):
     return None
 
 
-
-def method1(conflicts, N):
-    # cast to a set and back into list to dedup keys
-    unique_cons = list(set(conflicts))
-    # record output variable M (# unique session conflicts)
-    M = len(unique_cons)
-    # iterate through unique conflicts and create adjacency matrix
-    vertex_map = {}
-    for i, (a,b) in enumerate(unique_cons):
-        # edge a-->b
-        if a in vertex_map:
-            vertex_map[a].append(b)
-        else:
-            vertex_map[a] = [b]
-        # edge b-->a
-        if b in vertex_map:
-            vertex_map[b].append(a)
-        else:
-            vertex_map[b] = [a]
-    # build pointer list for each meeting
-    # set pointer to -1 by default if meeting
-    # has no conflicts
-    P = [-1] * N
-    keys = set(vertex_map.keys())
-    ptr = 0
-    for i in range(0,N+1):
-        if i in keys:
-            P[i-1] = ptr
-            ptr += len(vertex_map[i])
-    # flatten matrix into adjacency list
-    E = []
-    values = vertex_map.values()
-    for sublist in values:
-        for item in sublist:
-            E.append(item)
-
-    print("P:",P)
-    print("E:",E)
-    print("M:",M)
-
-    return None
 
 
 def schedule_confs(N, S, K, DIST):
