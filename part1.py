@@ -27,6 +27,10 @@ distributions = {
     'YOURS'   : random_distributions.triangular
 }
 
+def prettyprint(iterable):
+    for row in iterable:
+        print(row)
+
 def gen_attendee_sessions(N, S, K, dist_func):
     # allocate array of size (num_attendees * num_sessions_per_attendee)
     sessions = [0] * (S * K)
@@ -55,7 +59,9 @@ def gen_conflicts(attendee_sessions, conflicts, K):
         attendee_choices.append(a)
         for b in attendee_sessions:
             if b != a:
-                conflict = tuple([min(a,b), max(a,b)])
+                # note that this sort will ALWAYS only sort 2 items,
+                # therefore it is not O(nlogn), but O(2) -> O(1) (constant time)
+                conflict = tuple(sorted([a,b]))
                 if conflict not in attendee_conflicts:
                     attendee_conflicts.add(tuple([min(a,b), max(a,b)]))
                     conflicts.append(conflict)
@@ -76,7 +82,42 @@ def sessions_to_conflicts(sessions, S, K):
     gen_conflicts(temp, conflicts, K)
     return conflicts
 
-def slow_dedup(conflicts, N):
+def method2(conflicts, N):
+    # cast to a set to dedup conflicts
+    unique_cons = set(conflicts)
+    # record output variable M (# unique session conflicts)
+    M = len(unique_cons)
+
+    # O(n^2) space (N x N matrix)
+    adj_matrix = [[0] * N] * N
+    for y in range(N):
+        for x in range(N):
+            # note that this sort will ALWAYS only sort 2 items,
+            # therefore it is not O(nlogn), but O(2) -> O(1) (constant time)
+            conflict = tuple(sorted([y,x]))
+            if conflict in unique_cons:
+                adj_matrix[y][x] = 1
+
+    prettyprint(adj_matrix)
+    # build P and E lists
+    P = [-1] * N
+    E = []
+    ptr = 0
+    for y in range(N):
+        P[y] = ptr
+        for x in range(N):
+            if adj_matrix[y-1][x-1] == 1:
+                E.append(x)
+                ptr += 1
+    print("P:",P)
+    print("E:",E)
+    print("M:",M)
+
+    return None
+
+
+
+def method1(conflicts, N):
     # cast to a set and back into list to dedup keys
     unique_cons = list(set(conflicts))
     # record output variable M (# unique session conflicts)
@@ -122,8 +163,11 @@ def schedule_confs(N, S, K, DIST):
     # get 1D array of K unique sessions for S attendees
     sessions = gen_attendee_sessions(N, S, K, distributions[DIST])
     conflicts = sessions_to_conflicts(sessions, S, K)
+    c1 = conflicts
+    c2 = conflicts
     # V1 and V2
-    unique_conflicts = slow_dedup(conflicts, N)
+    unique_conflicts = method1(c1, N)
+    unique_conflicts = method2(c2, N)
 
 
 if __name__ == "__main__":
