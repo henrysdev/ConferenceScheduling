@@ -73,7 +73,7 @@ def sessions_to_conflicts(sessions, S, K):
     temp = [0] * K
     c, t = 0, 0
     for i in range(len(sessions)):
-        if i % K == 0 and i > 0:
+        if not i % K and i > 0:
             gen_conflicts(temp, conflicts, K)
             c += 1
             t = 0
@@ -83,81 +83,73 @@ def sessions_to_conflicts(sessions, S, K):
     return conflicts
 
 
-def method1(conflicts, N):
+# O(M) Space Complexity (Adjacency List Approach)
+def method2(conflicts, N):
     # cast to a set and back into list to dedup keys
     unique_cons = list(set(conflicts))
     # record output variable M (# unique session conflicts)
     M = len(unique_cons)
-    # iterate through unique conflicts and create adjacency matrix
-    adjacency_lists = [[]] * N
-    for i in range(1,N+1):
-        if i in 
-        adjacency_lists[i-1]
-    """
-    adjacency_lists = {}
-    for i, (a,b) in enumerate(unique_cons):
-        # edge a-->b
-        if a in adjacency_lists:
-            adjacency_lists[a].append(b)
-        else:
-            adjacency_lists[a] = [b]
-        # edge b-->a
-        if b in adjacency_lists:
-            adjacency_lists[b].append(a)
-        else:
-            adjacency_lists[b] = [a]
-    # build pointer list for each meeting
-    # set pointer to -1 by default if meeting
-    # has no conflicts
+    
+    # construct container for N empty arraylists
+    adjacency_lists = [[] for _ in range(N)]
+    # iterate through unique conflicts and build adjacency lists
+    for (v1, v2) in unique_cons:
+        adjacency_lists[v1-1].append(v2)
+        adjacency_lists[v2-1].append(v1)
+
+    print(adjacency_lists)
+    # initialize E and P arrays
+    E = [0] * M * 2
     P = [-1] * N
-    keys = set(adjacency_lists.keys())
-    ptr = 0
-    for i in range(1,N+1):
-        if i in keys:
-            P[i-1] = ptr
-            ptr += len(adjacency_lists[i])
-    # flatten matrix into adjacency list
-    E = []
-    values = adjacency_lists.values()
-    for sublist in values:
-        for item in sublist:
-            E.append(item)
+    tmp_ptr = 0
+    # fill in E and P arrays iteratively
+    for i in range(N):
+        listlen = len(adjacency_lists[i])
+        for j in range(listlen):
+            E[tmp_ptr + j] = adjacency_lists[i][j]
+        if listlen:
+            P[i] = tmp_ptr
+        tmp_ptr += listlen
 
     print("P:",P)
     print("E:",E)
     print("M:",M)
 
     return None
-    """
 
 
-def method2(conflicts, N):
+# O(N^2) Space Complexity (Adjacency Matrix Approach)
+def method1(conflicts, N):
     # cast to a set to dedup conflicts
     unique_cons = set(conflicts)
     # record output variable M (# unique session conflicts)
     M = len(unique_cons)
 
     # O(n^2) space (N x N matrix)
-    adj_matrix = [[0] * N] * N
+    adj_matrix = [[0] * N for _ in range(N)]#[[0] * N] * N
     for y in range(N):
         for x in range(N):
             # note that this sort will ALWAYS only sort 2 items,
             # therefore it is not O(nlogn), but O(2) -> O(1) (constant time)
-            conflict = tuple(sorted([y,x]))
+            conflict = (y+1,x+1)
             if conflict in unique_cons:
                 adj_matrix[y][x] = 1
 
     prettyprint(adj_matrix)
     # build P and E lists
+    E = [0] * M * 2
     P = [-1] * N
-    E = []
-    ptr = 0
+    tmp_ptr = 0
     for y in range(N):
-        P[y] = ptr
+        edge_count = 0
         for x in range(N):
-            if adj_matrix[y-1][x-1] == 1:
-                E.append(x)
-                ptr += 1
+            if adj_matrix[y][x]:
+                edge_count += 1
+                E[tmp_ptr + x] = y
+        if edge_count:
+            P[y] = tmp_ptr
+        tmp_ptr += edge_count
+
     print("P:",P)
     print("E:",E)
     print("M:",M)
@@ -175,7 +167,7 @@ def schedule_confs(N, S, K, DIST):
     c2 = conflicts
     # V1 and V2
     unique_conflicts = method1(c1, N)
-    unique_conflicts = method2(c2, N)
+    #unique_conflicts = method2(c2, N)
 
 
 if __name__ == "__main__":
