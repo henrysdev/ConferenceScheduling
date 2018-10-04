@@ -65,8 +65,8 @@ def gen_conflicts(attendee_sessions, conflicts, K):
                 if conflict not in attendee_conflicts:
                     attendee_conflicts.add(tuple([min(a,b), max(a,b)]))
                     conflicts.append(conflict)
-    print(attendee_choices)
-    print(attendee_conflicts)
+    #print(attendee_choices)
+    #print(attendee_conflicts)
 
 def sessions_to_conflicts(sessions, S, K):
     conflicts = []
@@ -122,20 +122,19 @@ def method2(conflicts, N):
 def method1(conflicts, N):
     # cast to a set to dedup conflicts
     unique_cons = set(conflicts)
+    print(unique_cons)
     # record output variable M (# unique session conflicts)
     M = len(unique_cons)
 
     # O(n^2) space (N x N matrix)
-    adj_matrix = [[0] * N for _ in range(N)]#[[0] * N] * N
+    adj_matrix = [[0 for _ in range(N)] for _ in range(N)]
     for y in range(N):
         for x in range(N):
-            # note that this sort will ALWAYS only sort 2 items,
-            # therefore it is not O(nlogn), but O(2) -> O(1) (constant time)
             conflict = (y+1,x+1)
             if conflict in unique_cons:
                 adj_matrix[y][x] = 1
+                adj_matrix[x][y] = 1
 
-    prettyprint(adj_matrix)
     # build P and E lists
     E = [0] * M * 2
     P = [-1] * N
@@ -144,8 +143,8 @@ def method1(conflicts, N):
         edge_count = 0
         for x in range(N):
             if adj_matrix[y][x]:
+                E[tmp_ptr + edge_count] = x + 1
                 edge_count += 1
-                E[tmp_ptr + x] = y
         if edge_count:
             P[y] = tmp_ptr
         tmp_ptr += edge_count
@@ -167,7 +166,7 @@ def schedule_confs(N, S, K, DIST):
     c2 = conflicts
     # V1 and V2
     unique_conflicts = method1(c1, N)
-    #unique_conflicts = method2(c2, N)
+    unique_conflicts = method2(c2, N)
 
 
 if __name__ == "__main__":
