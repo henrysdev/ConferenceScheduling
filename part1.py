@@ -99,8 +99,10 @@ def sessions_to_conflicts(sessions, S, K):
     gen_conflicts(temp_buf, conflicts, ptr, K)
     return conflicts
 
-# O(M) Space Complexity (Adjacency List Approach)
 def method2(conflicts, N):
+    """
+    O(M) Space Complexity using adjacency lists
+    """
     # cast to a set and back into list to dedup keys
     unique_cons = list(set(conflicts))
     # record output variable M (# unique session conflicts)
@@ -128,8 +130,10 @@ def method2(conflicts, N):
 
     return P, E, M
 
-# O(N^2) Space Complexity (Adjacency Matrix Approach)
 def method1(conflicts, N):
+    """
+    O(N^2) Space Complexity using adjacency matrices
+    """
     # cast to a set to dedup conflicts
     unique_cons = set(conflicts)
     # record output variable M (# unique session conflicts)
@@ -167,13 +171,15 @@ def method1(conflicts, N):
     return P, E, M
 
 def schedule_confs(N, S, K, DIST):
+    """
+    primary algorithm harnessing method
+    """
     global distributions
     # get 1D array of K unique sessions for S attendees
     sessions = pick_attendee_sessions(N, S, K, distributions[DIST])
     # generate conflicts for these sessions
     conflicts = sessions_to_conflicts(sessions, S, K)
 
-    # method1
     for method in [method1, method2]:
         P, E, M = method(conflicts, N)
         print('P:',P)
@@ -194,13 +200,18 @@ if __name__ == "__main__":
         K = int(sys.argv[3])
         DIST = sys.argv[4]
 
-    # assert DIST is a valid keyword
+    # **** Edge Cases ****
+    # exit if DIST is a valid keyword
     if DIST not in distributions:
         print("not a valid value for DIST")
         exit(0)
-
+    # exit if K is greater than N
     if K > N:
         print("K cannot be greater than N")
+        exit(0)
+    # exit if N is less than 2
+    if not N or not S or not K:
+        print("All parameters must be positive")
         exit(0)
 
     schedule_confs(N, S, K, DIST)
