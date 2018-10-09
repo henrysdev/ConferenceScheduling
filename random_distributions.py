@@ -25,19 +25,19 @@ def triangular(high, mode=None, low=0):
         low, high = high, low
     return low + (high - low) * math.sqrt(x * mode)
 
-""" SAVE SAVE SAVE SAVE SAVE
+"""
 import matplotlib.pyplot as plt; plt.rcdefaults()
 import matplotlib.pyplot as plt
-N = 10
-trials = 2000
+N = 100
+trials = 20000
 
 y_pos = list(range(1,N+1))
 
 py_performance = [0] * N
 for i in range(trials):
-    result = uniform_distro(N) #two_tiered(N) # uniform(N) # triangular(N,N//2)
+    result = triangular(N)
     py_performance[int(result)] += 1
 plt.bar(y_pos, py_performance, align="center", alpha=0.5)
-plt.title('Uniform')
+plt.title('Triangular')
 plt.show()
 """
