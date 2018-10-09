@@ -4,6 +4,7 @@ INPUT:
 •	S = Number of attendees. (MAX = 100,000)
 •	K = Number of sessions per attendee. (MAX = N for uniform and two-tiered distributions;  MAX = 0.1N for Skewed distribution and your distribution)
 •	DIST = UNIFORM | TIERED | SKEWED | YOURS
+
 OUTPUT:
 •	N = Number of sessions (may be reduced to actual number to be scheduled)
 •	M = number of distinct pair-wise session conflicts.
@@ -18,6 +19,7 @@ OUTPUT:
 import sys
 import math
 import random_distributions as rand_distros
+import part1_algorithms as p1_algos
 import utils
 
 # keyword -> function map for rand distros
@@ -71,9 +73,8 @@ def gen_conflicts(att_sessions, conflicts, ptr, K):
                 # append by reference to master conflicts set
                 if conflict not in attendee_conflicts:
                     conflicts[tmp_idx] = conflict
-                    tmp_idx += 1
                     attendee_conflicts.add(conflict)
-    print("attendee conflicts:",attendee_conflicts)
+                    tmp_idx += 1
 
 def sessions_to_conflicts(sessions, S, K):
     """
@@ -91,84 +92,13 @@ def sessions_to_conflicts(sessions, S, K):
         # therefore, generate conflicts for the current attendee
         if not i % K and i > 0:
             gen_conflicts(temp_buf, conflicts, ptr, K)
-            ptr += 3
+            ptr += (K * (K-1)) // 2
             t = 0
         temp_buf[t] = sessions[i]
         t += 1
     # generate conflicts for the last attendee
     gen_conflicts(temp_buf, conflicts, ptr, K)
     return conflicts
-
-def method2(conflicts, N):
-    """
-    O(M) Space Complexity using adjacency lists
-    """
-    # cast to a set and back into list to dedup keys
-    unique_cons = list(set(conflicts))
-    # record output variable M (# unique session conflicts)
-    M = len(unique_cons)
-    
-    # construct empty 2-D container for N empty arraylists
-    adjacency_lists = [[] for _ in range(N)]
-    # iterate through unique conflicts and build adjacency lists
-    for (v1, v2) in unique_cons:
-        adjacency_lists[v1-1].append(v2)
-        adjacency_lists[v2-1].append(v1)
-
-    # initialize E and P arrays
-    E = [0] * M * 2
-    P = [-1] * N
-    tmp_ptr = 0
-    # fill in E and P arrays iteratively
-    for i in range(N):
-        listlen = len(adjacency_lists[i])
-        for j in range(listlen):
-            E[tmp_ptr + j] = adjacency_lists[i][j]
-        if listlen:
-            P[i] = tmp_ptr
-        tmp_ptr += listlen
-
-    return P, E, M
-
-def method1(conflicts, N):
-    """
-    O(N^2) Space Complexity using adjacency matrices
-    """
-    # cast to a set to dedup conflicts
-    unique_cons = set(conflicts)
-    # record output variable M (# unique session conflicts)
-    M = len(unique_cons)
-
-    # O(n^2) space (N x N matrix)
-    # allocate NxN adjacency matrix
-    adj_matrix = [[0 for _ in range(N)] for _ in range(N)]
-    # fill in conflict intersections in 2-D grid of edges
-    for y in range(N):
-        for x in range(N):
-            # adjust for 1-indexed representation
-            conflict = (y+1,x+1)
-            if conflict in unique_cons:
-                adj_matrix[y][x] = 1
-                adj_matrix[x][y] = 1
-
-    # build P and E lists
-    E = [0] * M * 2
-    P = [-1] * N
-    tmp_ptr = 0
-    # iterate through 2-D grid and generate E and P arrays
-    for y in range(N):
-        edge_count = 0
-        for x in range(N):
-            # fill in E array when conflict found + adjust for 1-indexing
-            if adj_matrix[y][x]:
-                E[tmp_ptr + edge_count] = x + 1
-                edge_count += 1
-        # fill in P array with current ptr if if has any conflicts 
-        if edge_count:
-            P[y] = tmp_ptr
-        tmp_ptr += edge_count
-
-    return P, E, M
 
 def schedule_confs(N, S, K, DIST):
     """
@@ -180,11 +110,9 @@ def schedule_confs(N, S, K, DIST):
     # generate conflicts for these sessions
     conflicts = sessions_to_conflicts(sessions, S, K)
 
-    for method in [method1, method2]:
+    for method in [p1_algos.method1, p1_algos.method2]:
         P, E, M = method(conflicts, N)
-        print('P:',P)
-        print('E:',E)
-        print('M:',M)
+        print(utils.format_output(N=N, S=S, K=K, DIST=DIST, P=P, E=E, M=M))
 
 if __name__ == "__main__":
     # default algorithm arguments
