@@ -28,6 +28,29 @@ class DLList:
             self.head.prev = new_node
         self.head = new_node
     
+    def foreach(self, func, args):
+        curr = self.head
+        while curr:
+            func(curr, args)
+            curr = curr.next
+
+    def del_node(self, session_id):
+        if self.head is None:
+            return
+        curr = self.head
+        while curr:
+            if curr.data.session_id == session_id:
+                if curr.prev:
+                    if curr.next:
+                        curr.next.prev = curr.prev
+                        curr.prev.next = curr.next
+                    else:
+                        curr.prev.next = None
+                else:
+                    self.del_front()
+            else:
+                curr = curr.next
+    
     def del_front(self):
         if self.head is not None:
             next_node = self.head.next
@@ -61,8 +84,7 @@ class VertexData():
         self.color = color
     
     def __str__(self):
-        print(self.edges_ptr)
-        return str(self.edges_ptr)
+        return str(self.session_id)
     
     def __repr__(self):
         self.__str__()
@@ -70,54 +92,53 @@ class VertexData():
 
 
 
-def build_degree_map(P, E, N):
+def build_degree_array(P, E, N):
     """ method to create a map of degree -> DLList of vertices of this degree """
 
-    def _dllist_append(_plist, degree, vertex):
+    def dllist_append(dllist, degree, vertex):
         """ internal function to build DLList dynamically """
-        if _plist[degree] == False:
-            _plist[degree] = DLList()
-        _plist[degree].add_front(vertex)
-
-    deg_to_plist = [False for x in range(N-1)]
-
-    j = 0
-    k = 0
-
-    while j < len(P):
-        if P[j] == -1:
-            degree = 0
-            session_id = j + 1
-            vertex = VertexData(session_id, P[j], degree)
-            _dllist_append(deg_to_plist, degree, vertex)
-            j += 1
-        else:
-            next_val = len(E)
-            k = j + 1
-            while k < len(P):
-                if P[k] == -1:
-                    k += 1
-                else:
-                    next_val = P[k]
-                    break
-            degree = next_val - P[j]
-            session_id = j + 1
-            vertex = VertexData(session_id, P[j], degree)
-            _dllist_append(deg_to_plist, degree, vertex)
-
-            if next_val != len(E):
-                j = k
-            else:
-                break
+        #print(degree)
+        if dllist[degree] == False:
+            dllist[degree] = DLList()
+        dllist[degree].add_front(vertex)
     
-    return deg_to_plist
+    print("E:", E)
+    print("P:", P)
+
+    deg_dll_array = [False for x in range(N-1)]
+    deg_ptr_array = [False for x in range(N)]
+
+    saved_val = len(E)
+    for i in range(len(P)-1, -1 , -1):
+        if P[i] == -1:
+            degree = 0
+        elif saved_val:
+            degree = saved_val - P[i]
+            saved_val = P[i]
+        else:
+            saved_val = P[i]
+            continue
+        session_id = i + 1
+        vertex = VertexData(session_id, P[i], degree)
+        dllist_append(deg_dll_array, degree, vertex)
+        deg_ptr_array[i] = degree
+
+    
+    return deg_dll_array, deg_ptr_array
 
 
 def smallest_last_ordering(N, S, K, DIST, P, E, M):
-    deg_to_plist = build_degree_map(P, E, N)
-    print(deg_to_plist)
+    deg_dll_array, deg_ptr_array = build_degree_array(P, E, N)
+    print(deg_dll_array)
+    print(deg_ptr_array)
+
     # delete vertices smallest vertex first recursively
     deleted_list = []
+
+    # i = 0
+    # while i < N-1:
+    #     deg_plist[i].foreach(recur_delete, )
+
 
 
 
