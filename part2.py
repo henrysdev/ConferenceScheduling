@@ -1,17 +1,18 @@
 from dllist import DLList, DLLNode
 
 class VertexData():
-    def __init__(self, session_id, edges_ptr, curr_degree, color="red"):
+    def __init__(self, session_id, edges_ptr, curr_degree, orig_degree, color="red"):
         self.session_id = session_id
         self.edges_ptr = edges_ptr
         self.curr_degree = curr_degree
+        self.orig_degree = orig_degree
         self.color = color
     
     def __str__(self):
         return str(self.session_id)
     
     def __repr__(self):
-        self.__str__()
+        return self.__str__()
 
 
 
@@ -42,7 +43,7 @@ def build_degree_array(P, E, N):
             saved_val = P[i]
             continue
         session_id = i + 1
-        vertex = VertexData(session_id, P[i], degree)
+        vertex = VertexData(session_id, P[i], P[i], degree)
         dllist_append(degree_dllists, degree, vertex)
         degree_ptrs[i] = degree
 
@@ -78,32 +79,24 @@ def smallest_last_ordering(N, S, K, DIST, P, E, M):
     def update_vertex(session_id, degree_ptrs, N):
         if degree_ptrs[session_id] > 0:
             degree_ptrs[session_id] -= 1
-    
-    print("degree_ptrs:", degree_ptrs)
-    print("del_stack:",deleted_stack)
 
     # find first smallest vertex as starting point
     while len(deleted_stack) < N:
         curr_session, curr_degree = find_next_smallest(degree_ptrs, N)
-        # MUST FIX THIS LINE TO TRY TO APPLY TO ALL NEIGHBORS
-        neighbors = E[curr_session : curr_session + curr_degree]
-        print()
-        print("curr_session:", curr_session+1)
-        print("neighbors:", neighbors)
-
-        print("before:", degree_ptrs)
+        neighbors = E[P[curr_session] : P[curr_session] + orig_degrees[curr_session]]
         for n in neighbors:
             update_vertex(n - 1, degree_ptrs, N)
-        print("after: ", degree_ptrs)
-
+        
+        saved_vert = VertexData(curr_session + 1, P[curr_session], curr_degree, orig_degrees[curr_session])
         delete_vertex(curr_session, degree_ptrs)
-        deleted_stack.append((curr_session+1, curr_degree))
-        print("degree_ptrs:", degree_ptrs)
-        print("del_stack:",deleted_stack)
-    
-    while deleted_stack:
-        print(deleted_stack.pop())
+        deleted_stack.append(saved_vert)
 
+    deleted_stack = deleted_stack[::-1]
+    for i in range(len(deleted_stack)):
+        deleted_stack[i].color = i + 1
+    
+    print(deleted_stack)
+    
 
 def part2_wrapper(N, S, K, DIST, P, E, M):
     """ wrapper method for part2 """
