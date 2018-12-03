@@ -112,7 +112,7 @@ def schedule_confs(N, S, K, DIST):
 
     for method in [p1_algos.method1, p1_algos.method2]:
         P, E, M = method(conflicts, N)
-        return part2.part2_wrapper(N=N, S=S, K=K, DIST=DIST, P=P, E=E, M=M)
+        return part2.input(N=N, S=S, K=K, DIST=DIST, P=P, E=E, M=M)
         #return utils.format_output(N=N, S=S, K=K, DIST=DIST, P=P, E=E, M=M)
 
 if __name__ == "__main__":
