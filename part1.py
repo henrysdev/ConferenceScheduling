@@ -20,7 +20,11 @@ import sys
 import math
 import random_distributions as rand_distros
 import part1_algorithms as p1_algos
+import part2
+import part2_algorithms
 import utils
+import time
+
 
 # keyword -> function map for rand distros
 distributions = {
@@ -100,7 +104,7 @@ def sessions_to_conflicts(sessions, S, K):
     gen_conflicts(temp_buf, conflicts, ptr, K)
     return conflicts
 
-def schedule_confs(N, S, K, DIST):
+def schedule_confs(func, N, S, K, DIST):
     """
     primary algorithm harnessing method
     """
@@ -112,10 +116,51 @@ def schedule_confs(N, S, K, DIST):
 
     for method in [p1_algos.method1, p1_algos.method2]:
         P, E, M = method(conflicts, N)
-        return part2.input(N=N, S=S, K=K, DIST=DIST, P=P, E=E, M=M)
+        return part2.input(func, N=N, S=S, K=K, DIST=DIST, P=P, E=E, M=M)
         #return utils.format_output(N=N, S=S, K=K, DIST=DIST, P=P, E=E, M=M)
 
+
+
+
+def plot_func(funcs, N, S, K, DIST, trials=3):
+    import matplotlib.pyplot as plt; plt.rcdefaults()
+    import matplotlib.pyplot as plt
+
+    indep_var = "S"
+
+    for func in funcs:
+        asymp_range = range(12, 2000)
+        y_axis = []
+        x_axis = list(asymp_range)
+
+        for val in asymp_range:
+            trials_time = 0.0
+            for _ in range(trials):
+                start = time.time()
+                schedule_confs(func=func, N=N, S=val, K=K, DIST=DIST)
+                end = time.time()
+                trials_time += (end - start)
+            y_axis.append(trials_time / trials)
+        plt.plot(x_axis, y_axis)
+
+    plt.ylabel('Time')
+    plt.xlabel(indep_var)
+    plt.title('CPU Time vs {}'.format(indep_var))
+    plt.legend(tuple([f.__name__ for f in funcs]), loc='best' )
+    plt.savefig("part2_screenshots/time_vs_{}.png".format(indep_var))
+    plt.show()
+
+def plot_wrapper(N, S, K, DIST):
+    funcs = [
+        part2_algorithms.smallest_last_ordering,
+        part2_algorithms.random_ordering
+    ]
+    plot_func(funcs, N, S, K, DIST)
+
+
+
 if __name__ == "__main__":
+
     # default algorithm arguments
     N = 120
     S = 32
@@ -128,6 +173,9 @@ if __name__ == "__main__":
         S = int(sys.argv[2])
         K = int(sys.argv[3])
         DIST = sys.argv[4]
+    
+    # plot_wrapper(N, S, K, DIST)
+    # exit(0)
 
     # **** Edge Cases ****
     # exit if DIST is a valid keyword
@@ -143,5 +191,5 @@ if __name__ == "__main__":
         print("All parameters must be positive")
         exit(0)
 
-    import part2
-    output = schedule_confs(N, S, K, DIST)
+    func = part2_algorithms.smallest_last_ordering
+    output = schedule_confs(func, N, S, K, DIST)
